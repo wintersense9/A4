@@ -75,32 +75,6 @@ band 与建议分支名对应表：
 
 每个 band 的工作循环（一次只做一个分支）：
 
-   # git checkout dev：先回到 dev，保证 feature 从 dev 分出
-   git checkout dev
-
-   # git checkout -b Feature-xxx：从 dev 新建这个 band 的 feature 分支并切换过去
-   git checkout -b Feature-StartScreen
-
-   # ...开发过程中多次小 commit...
-   # git add .：把改动放入暂存区
-   git add .
-   # git commit -m "..."：把暂存区保存为一个版本，说明写清做了什么
-   git commit -m "Add StartScene with animated border"
-   # git push -u origin Feature-StartScreen：首次推送这个分支到 GitHub 并建立追踪
-   git push -u origin Feature-StartScreen
-
-   # band 完成后合并回 dev：
-   # git checkout dev：切回 dev（合并要在"接收方"分支上执行）
-   git checkout dev
-   # git merge --no-ff Feature-StartScreen：把 feature 合并进 dev；
-   # --no-ff 会生成一条合并记录，分支结构更清晰（marker 好检查）
-   git merge --no-ff Feature-StartScreen
-   # git push：把合并后的 dev 推到 GitHub
-   git push
-
-然后重复：下一个 band 再从 dev 分出新 feature 分支。
-
-
 【案例】以 30% Z（开始界面）band 为例，完整走一遍
 ====================================================
 
