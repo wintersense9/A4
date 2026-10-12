@@ -1,4 +1,4 @@
-Assessment 4 Git/GitHub 操作步骤
+Assessment 4 Git/GitHub 操作步骤（每个命令附目的注释）
 ==================================
 依据：31263-32004 IGDev Assessment 4.pdf（Git Repository 占 10%，3.5 分）
 
@@ -21,23 +21,44 @@ Assessment 4 Git/GitHub 操作步骤
    "fatal: not a git repository"
 1. 项目还没有 .git 的话，先初始化：
 
+   # cd：进入 Unity 项目根目录（后面所有命令都在这里执行）
    cd Unity项目根目录路径
+
+   # git init：在当前文件夹创建 .git 仓库，开始对这个文件夹做版本管理
    git init
 
 2. 确保有 .gitignore（Unity 项目必须忽略 Library/ Temp/ 等目录），没有就先创建
 3. 在 GitHub 上新建一个空仓库（不要勾选 README/.gitignore 初始化）
 4. 关联远程仓库：
 
+   # git remote add origin <网址>：把 GitHub 仓库登记为远程"origin"，
+   # 之后所有 push/pull 默认都指向它（只执行一次）
    git remote add origin https://github.com/wintersense9/A4.git
+
+   # git add .：把当前目录所有文件放入暂存区（staging），准备提交
    git add .
+
+   # git commit -m "..."：把暂存区内容保存成一个版本（提交）；-m 后写说明
    git commit -m "Initial commit"
+
+   # git branch -M main：把当前分支（默认叫 master）强制改名为 main，
+   # 因为作业要求主分支必须是 main
+   git branch -M main
+
+   # git push -u origin main：把本地 main 推到 GitHub；
+   # -u 建立追踪关系，以后在这个分支直接 git push 就行
    git push -u origin main
 
 
 第 1 步：建 dev 分支（从 main 分出）
 --------------------------------
+   # git checkout main：切换到 main 分支——保证 dev 是从 main 长出来的
    git checkout main
+
+   # git checkout -b dev：从当前位置新建 dev 分支并立刻切换过去
    git checkout -b dev
+
+   # git push -u origin dev：把本地 dev 推到 GitHub 并建立追踪关系
    git push -u origin dev
 
 
@@ -54,28 +75,106 @@ band 与建议分支名对应表：
 
 每个 band 的工作循环（一次只做一个分支）：
 
+   # git checkout dev：先回到 dev，保证 feature 从 dev 分出
    git checkout dev
+
+   # git checkout -b Feature-xxx：从 dev 新建这个 band 的 feature 分支并切换过去
    git checkout -b Feature-StartScreen
 
    # ...开发过程中多次小 commit...
+   # git add .：把改动放入暂存区
    git add .
+   # git commit -m "..."：把暂存区保存为一个版本，说明写清做了什么
    git commit -m "Add StartScene with animated border"
+   # git push -u origin Feature-StartScreen：首次推送这个分支到 GitHub 并建立追踪
    git push -u origin Feature-StartScreen
 
-   # band 完成后合并回 dev
+   # band 完成后合并回 dev：
+   # git checkout dev：切回 dev（合并要在"接收方"分支上执行）
    git checkout dev
+   # git merge --no-ff Feature-StartScreen：把 feature 合并进 dev；
+   # --no-ff 会生成一条合并记录，分支结构更清晰（marker 好检查）
    git merge --no-ff Feature-StartScreen
+   # git push：把合并后的 dev 推到 GitHub
    git push
 
 然后重复：下一个 band 再从 dev 分出新 feature 分支。
 
 
+【案例】以 30% Z（开始界面）band 为例，完整走一遍
+====================================================
+
+阶段 1：开工 —— 从 dev 分出 feature 分支
+------------------------------------------
+   git checkout dev
+   git checkout -b Feature-StartScreen
+   # 执行完终端提示变成 (Feature-StartScreen)，表示当前在新分支上干活
+
+阶段 2：开发 —— 每完成一个小任务就 commit 一次
+------------------------------------------
+   # 比如这个 band 要做三件事：标题文字、动画边框、Level 按钮，commit 三次
+   # 做完标题文字后：
+   git add .
+   git commit -m "Create StartScene with PacStudent title text"
+
+   # 做完动画边框后：
+   git add .
+   git commit -m "Add animated dot border around title screen"
+
+   # 做完按钮后：
+   git add .
+   git commit -m "Add Level 1 and Level 2 buttons with scene loading"
+
+   # 要点：commit 要小而多（作业要求每个 feature 分支多条 commit），
+   # 不要憋到最后一次性提交
+
+阶段 3：推送到 GitHub 备份
+------------------------------------------
+   git push -u origin Feature-StartScreen
+   # 第一次推这个分支加 -u，之后在这个分支上直接 git push
+
+阶段 4：band 做完 —— 合并回 dev
+------------------------------------------
+   git checkout dev                          # 切回 dev
+   git merge --no-ff Feature-StartScreen     # 把成果合并进来
+   git push                                  # 推送更新后的 dev
+
+阶段 5：下一个 band —— 完全重复上面的循环
+------------------------------------------
+   git checkout dev
+   git checkout -b Feature-InGameUI
+   # ...做游戏内 UI，多次 commit，做完合并回 dev...
+
+阶段 6：检查分支图（做完一个 band 后跑一次）
+------------------------------------------
+   git log --oneline --graph --all
+   # 输出应该长这样（feature 从 dev 分叉、又合并回 dev）：
+   #
+   # *   f3a9b2c (dev) Merge branch 'Feature-StartScreen'
+   # |\
+   # | * c1d2e3f Add Level 1 and Level 2 buttons with scene loading
+   # | * b2c3d4e Add animated dot border around title screen
+   # | * a1b2c3d Create StartScene with PacStudent title text
+   # |/
+   # * e4f5a6b (main) Initial commit
+   #
+   # 看到这种"分叉又汇合"的结构就说明做对了。
+   # 所有 band 做完，才执行第 3 步的 dev -> main 合并。
+
+
 第 3 步：全部完成、提交前（关键）
 --------------------------------
+   # git checkout main：切回主分支
    git checkout main
+
+   # git merge --no-ff dev：把 dev 上的全部成果合并进 main
    git merge --no-ff dev
+
+   # git push：把 main 推到 GitHub
    git push
-   git branch        # 确认当前在 main（显示 * main），再打包
+
+   # git branch：列出本地分支，确认当前在 main（显示 * main）再打包
+   git branch
 
 
 提交注意事项
